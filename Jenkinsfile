@@ -9,23 +9,67 @@ pipeline{
 	stages {
         
         stage('Test') {
-
+            agent {
+                // Equivalent to "docker build -t ayushdock/multi-client:latest -f Dockerfile.dev ./client
+                dockerfile {
+                    filename 'Dockerfile.dev'
+                    dir 'client'
+                    additionalBuildArgs  '-t ayushdock/multi-client:latest'
+                }
+            }
 			steps {
-                sh 'docker build -t ayushdock/multi-client:latest -f ./client/Dockerfile.dev ./client'
-                sh 'docker run ayushdock/multi-client:latest npm test -- --coverage'
+                // sh 'docker build -t ayushdock/multi-client:latest -f Dockerfile.dev ./client'
+                sh 'npm run test -- --coverage'
                 // coverage ... sp that test script exits eventually
 			}
 		}
 
-        stage('Build') {
-
-			steps {
-				sh 'docker build -t ayushdock/multi-client -f ./client'
-                sh 'docker build -t ayushdock/multi-nginx -f ./nginx'
-				sh 'docker build -t ayushdock/multi-server -f ./server'
-				sh 'docker build -t ayushdock/multi-worker -f ./worker'
+        stage('Prod-Build-client') {
+            agent {
+                dockerfile {
+                    dir 'client'
+                    additionalBuildArgs  '-t ayushdock/multi-client'
+                }
             }
+			
 		}
+
+        stage('Prod-Build-nginx') {
+            agent {
+                dockerfile {
+                    dir 'nginx'
+                    additionalBuildArgs  '-t ayushdock/multi-nginx'
+                }
+            }
+			
+		}
+
+        stage('Prod-Build-server') {
+            agent {
+                dockerfile {
+                    dir 'server'
+                    additionalBuildArgs  '-t ayushdock/multi-server'
+                }
+            }
+			
+		}
+
+        stage('Prod-Build-worker') {
+            agent {
+                dockerfile {
+                    dir 'client'
+                    additionalBuildArgs  '-t ayushdock/multi-worker'
+                }
+            }
+			
+		}
+
+        // steps {
+        //     sh 'docker build -t ayushdock/multi-client ./client'
+        //     sh 'docker build -t ayushdock/multi-nginx ./nginx'
+        //     sh 'docker build -t ayushdock/multi-server ./server'
+        //     sh 'docker build -t ayushdock/multi-worker ./worker'
+        // }
 
 		stage('Login') {
 
@@ -52,3 +96,4 @@ pipeline{
 	}
 
 }
+
