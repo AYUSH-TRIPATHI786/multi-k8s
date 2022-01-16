@@ -9,67 +9,32 @@ pipeline{
 	stages {
         
         stage('Test') {
-            agent {
-                // Equivalent to "docker build -t ayushdock/multi-client:latest -f Dockerfile.dev ./client
-                dockerfile {
-                    filename 'Dockerfile.dev'
-                    dir 'client'
-                    additionalBuildArgs  '-t ayushdock/multi-client:latest'
-                }
-            }
+            // agent {
+            //     // Equivalent to "docker build -f Dockerfile.build --build-arg version=1.0.2 ./build/
+            //     dockerfile {
+            //         filename 'Dockerfile.dev'
+            //         dir 'build'
+            //         label 'my-defined-label'
+            //         additionalBuildArgs  '--build-arg version=1.0.2'
+            //         args '-v /tmp:/tmp'
+            //     }
+            // }
 			steps {
-                // sh 'docker build -t ayushdock/multi-client:latest -f Dockerfile.dev ./client'
-                sh 'npm run test -- --coverage'
+                sh 'docker build -t ayushdock/multi-client:latest -f ./client/Dockerfile.dev ./client'
+                sh 'docker run ayushdock/multi-client:latest npm test -- --coverage'
                 // coverage ... sp that test script exits eventually
 			}
 		}
 
-        stage('Prod-Build-client') {
-            agent {
-                dockerfile {
-                    dir 'client'
-                    additionalBuildArgs  '-t ayushdock/multi-client'
-                }
-            }
-			
-		}
+        stage('Build') {
 
-        stage('Prod-Build-nginx') {
-            agent {
-                dockerfile {
-                    dir 'nginx'
-                    additionalBuildArgs  '-t ayushdock/multi-nginx'
-                }
+			steps {
+				sh 'docker build -t ayushdock/multi-client ./client'
+                sh 'docker build -t ayushdock/multi-nginx ./nginx'
+				sh 'docker build -t ayushdock/multi-server ./server'
+				sh 'docker build -t ayushdock/multi-worker ./worker'
             }
-			
 		}
-
-        stage('Prod-Build-server') {
-            agent {
-                dockerfile {
-                    dir 'server'
-                    additionalBuildArgs  '-t ayushdock/multi-server'
-                }
-            }
-			
-		}
-
-        stage('Prod-Build-worker') {
-            agent {
-                dockerfile {
-                    dir 'client'
-                    additionalBuildArgs  '-t ayushdock/multi-worker'
-                }
-            }
-			
-		}
-
-        // steps {
-        //     sh 'docker build -t ayushdock/multi-client ./client'
-        //     sh 'docker build -t ayushdock/multi-nginx ./nginx'
-        //     sh 'docker build -t ayushdock/multi-server ./server'
-        //     sh 'docker build -t ayushdock/multi-worker ./worker'
-        // }
 
 		stage('Login') {
 
@@ -96,4 +61,3 @@ pipeline{
 	}
 
 }
-
