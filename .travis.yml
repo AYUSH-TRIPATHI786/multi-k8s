@@ -28,7 +28,7 @@ deploy:
   region: us-east-2 
   
   #from aws
-  app: multi-docker
+  app: multi-docker-new
   env: Multidockernew-env
   
   #from s3 bucket
