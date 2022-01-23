@@ -29,7 +29,7 @@ deploy:
   
   #from aws
   app: multi-docker
-  env: Multidocker-env
+  env: Multidockernew-env
   
   #from s3 bucket
   bucket-name: elasticbeanstalk-us-east-2-318339392583
